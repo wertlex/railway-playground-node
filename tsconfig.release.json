@@ -1,0 +1,7 @@
+// config used for building release version
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "src/**/*"
+  ]
+}

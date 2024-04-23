@@ -1,0 +1,14 @@
+# IDEs
+.idea
+
+# node
+node_modules
+
+# localdata
+.localdata
+
+# build artifacts
+dist
+
+# logs
+logs
