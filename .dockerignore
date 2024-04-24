@@ -1,8 +1,0 @@
-# we don't need host's node_modules
-node_modules
-# we don't need git and idea dirs too
-.git
-.idea
-file-upload-tmp
-logs
-dist

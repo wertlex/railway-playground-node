@@ -20,6 +20,13 @@ type CreateServiceInput = Readonly<{
   };
 }>;
 
+type ConnectServiceInput = Readonly<{
+  serviceId: string;
+  branch?: string;
+  image?: string;
+  repo?: string;
+}>;
+
 export class RailwayClient {
   private readonly config: RailwayClientConfig;
 
@@ -92,6 +99,43 @@ export class RailwayClient {
 
     if (typeof result.data?.data?.serviceCreate?.id === 'string') {
       return result.data.data.serviceCreate.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async connectService(input: ConnectServiceInput): Promise<void> {
+    const query = `
+      mutation ServiceConnect($id: String!, $serviceConnectInput: ServiceConnectInput!) {
+        serviceConnect(id: $id, input: $serviceConnectInput) {
+          id
+        }
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        id: input.serviceId,
+        serviceConnectInput: {
+          branch: input.branch,
+          image: input.image,
+          repo: input.repo
+        }
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (typeof result.data?.data?.serviceConnect?.id === 'string') {
+      return result.data.data.serviceConnect.id;
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
