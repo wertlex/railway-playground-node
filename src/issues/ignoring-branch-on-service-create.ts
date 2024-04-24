@@ -39,9 +39,9 @@ async function main() {
   const serviceId = await client.createService({
     projectId,
     name: `S-${Date.now()}`,
-    branch: 'TC-6461_file-storage-in-railway', // this parameter has no effect
+    branch: 'main', // this parameter has no effect
     source: {
-      repo: ''
+      repo: 'wertlex/railway-playground-node'
     }
   });
   console.log(`serviceId: ${serviceId}`);
