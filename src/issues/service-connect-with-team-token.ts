@@ -26,15 +26,18 @@ function getToken(): string {
 }
 
 async function main() {
+  // creating fresh instance of railway client
   const client = new RailwayClient({
     token: getToken(),
     endpoint: railwayEndpoint
   });
 
+  // creating new project if `existingProjectId` was not provided. Using `existingProjectId` helps to reduce amount of trash generated
   const projectId = existingProjectId ?? (await client.createProject({ name: `My-Project-${Date.now()}` }));
   console.log(`projectId: ${projectId}`);
 
   // works good! (deployment eventually will fail due to lack of env vars, but this is not relevant here)
+  // this one here is just to check that at least something really works
   const postgresServiceId = await client.createService({
     projectId,
     name: `PG-${Date.now()}`,
@@ -44,15 +47,18 @@ async function main() {
   });
   console.log(`postgresServiceId: ${postgresServiceId}`);
 
-  // just creating empty service here. Connection to the repo will be set using `connectService` below
+  // works good. just creating empty service here. Connection to the repo will be set using `connectService` below
   const serviceId = await client.createService({
     projectId,
     name: `S-${Date.now()}`
   });
   console.log(`serviceId: ${serviceId}`);
 
+  // works bad. This is where the issue is. This call when using team token ends up with a failure, while
+  // perfectly works with personal accounts in personal dashboard
   await client.connectService({
     serviceId,
+    // this repo needs to be authorized using first
     repo: '<your-repo-here>',
     branch: '<your-branch-here>'
   });
