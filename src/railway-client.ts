@@ -32,6 +32,11 @@ type GetProjectDefaultEnvironmentInput = Readonly<{
   projectId: string;
 }>;
 
+type ProjectData = {
+  id: string;
+  name: string;
+};
+
 export class RailwayClient {
   private readonly config: RailwayClientConfig;
 
@@ -65,6 +70,41 @@ export class RailwayClient {
 
     if (typeof result.data?.data?.projectCreate?.id === 'string') {
       return result.data.data.projectCreate.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async listProjects(): Promise<ProjectData[]> {
+    const query = `
+      query ListProjects {
+        projects {
+          edges {
+              node {
+                  id
+                  name
+              }
+          }
+        }
+      }
+    `;
+
+    const requestBody = {
+      query
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    const maybeEdges = result.data?.data?.projects?.edges;
+    if (Array.isArray(maybeEdges)) {
+      return maybeEdges.map(edge => edge.node);
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
@@ -183,6 +223,7 @@ export class RailwayClient {
 
     const maybeEdges = result.data?.data?.project?.environments?.edges;
     if (Array.isArray(maybeEdges) && maybeEdges.length > 0) {
+      // considering that oldest one is default
       const sortedEdges = [...maybeEdges].sort((a, b) => {
         const aDate = new Date(a.node.createdAt);
         const bDate = new Date(b.node.createdAt);
