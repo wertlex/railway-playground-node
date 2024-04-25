@@ -15,10 +15,10 @@ async function main() {
     endpoint: railwayEndpoint
   });
 
-  const projects = await client.listProjects();
+  const projects = await client.projectsList();
   console.log(`Got projects: ${JSON.stringify(projects, null, 2)}`);
 
-  await client.deleteProjects(projects.map(p => p.id));
+  await client.projectsDelete(projects.map(p => p.id));
   console.log(`All projects are deleted`);
 }
 

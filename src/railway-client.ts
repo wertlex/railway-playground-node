@@ -44,7 +44,7 @@ export class RailwayClient {
     this.config = config;
   }
 
-  async createProject(input: CreateProjectInput): Promise<string> {
+  async projectCreate(input: CreateProjectInput): Promise<string> {
     const query = `
       mutation ProjectCreate($projectCreateInput: ProjectCreateInput!) {
         projectCreate(input: $projectCreateInput) {
@@ -79,7 +79,7 @@ export class RailwayClient {
     throw new Error(`Unexpected response from server`);
   }
 
-  async listProjects(): Promise<ProjectData[]> {
+  async projectsList(): Promise<ProjectData[]> {
     const query = `
       query ListProjects {
         projects {
@@ -114,7 +114,7 @@ export class RailwayClient {
     throw new Error(`Unexpected response from server`);
   }
 
-  async deleteProjects(projectIds: readonly string[]): Promise<void> {
+  async projectsDelete(projectIds: readonly string[]): Promise<void> {
     const projectDeleteMutations = projectIds.map((id, idx) => `pj${idx}:projectDelete(id: "${id}")`).join('\n');
     const query = `
       mutation ProjectsDelete {
@@ -136,84 +136,7 @@ export class RailwayClient {
     }
   }
 
-  async createService(input: CreateServiceInput): Promise<string> {
-    const query = `
-      mutation ServiceCreate($serviceCreateInput: ServiceCreateInput!) {
-        serviceCreate(input: $serviceCreateInput) {
-          id
-        }
-      }
-    `;
-
-    const requestBody = {
-      query,
-      variables: {
-        serviceCreateInput: {
-          projectId: input.projectId,
-          name: input.name,
-          branch: input.branch,
-          source: {
-            image: input.source?.image,
-            repo: input.source?.repo
-          }
-        }
-      }
-    };
-
-    const result = await axios.post(this.config.endpoint, requestBody, {
-      headers: this.getAuthorizationHeaders(this.config.token),
-      validateStatus: null
-    });
-
-    if (typeof result.data?.data?.serviceCreate?.id === 'string') {
-      return result.data.data.serviceCreate.id;
-    }
-
-    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
-      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
-    }
-
-    throw new Error(`Unexpected response from server`);
-  }
-
-  async connectService(input: ConnectServiceInput): Promise<void> {
-    const query = `
-      mutation ServiceConnect($id: String!, $serviceConnectInput: ServiceConnectInput!) {
-        serviceConnect(id: $id, input: $serviceConnectInput) {
-          id
-        }
-      }
-    `;
-
-    const requestBody = {
-      query,
-      variables: {
-        id: input.serviceId,
-        serviceConnectInput: {
-          branch: input.branch,
-          image: input.image,
-          repo: input.repo
-        }
-      }
-    };
-
-    const result = await axios.post(this.config.endpoint, requestBody, {
-      headers: this.getAuthorizationHeaders(this.config.token),
-      validateStatus: null
-    });
-
-    if (typeof result.data?.data?.serviceConnect?.id === 'string') {
-      return result.data.data.serviceConnect.id;
-    }
-
-    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
-      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
-    }
-
-    throw new Error(`Unexpected response from server`);
-  }
-
-  async getProjectDefaultEnvironmentId(input: GetProjectDefaultEnvironmentInput): Promise<string> {
+  async projectGetDefaultEnvironmentId(input: GetProjectDefaultEnvironmentInput): Promise<string> {
     const query = `
       query GetProject($id: String!) {
         project(id: $id) {
@@ -255,6 +178,83 @@ export class RailwayClient {
       });
 
       return sortedEdges[0].node.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async serviceCreate(input: CreateServiceInput): Promise<string> {
+    const query = `
+      mutation ServiceCreate($serviceCreateInput: ServiceCreateInput!) {
+        serviceCreate(input: $serviceCreateInput) {
+          id
+        }
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        serviceCreateInput: {
+          projectId: input.projectId,
+          name: input.name,
+          branch: input.branch,
+          source: {
+            image: input.source?.image,
+            repo: input.source?.repo
+          }
+        }
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (typeof result.data?.data?.serviceCreate?.id === 'string') {
+      return result.data.data.serviceCreate.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async serviceConnect(input: ConnectServiceInput): Promise<void> {
+    const query = `
+      mutation ServiceConnect($id: String!, $serviceConnectInput: ServiceConnectInput!) {
+        serviceConnect(id: $id, input: $serviceConnectInput) {
+          id
+        }
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        id: input.serviceId,
+        serviceConnectInput: {
+          branch: input.branch,
+          image: input.image,
+          repo: input.repo
+        }
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (typeof result.data?.data?.serviceConnect?.id === 'string') {
+      return result.data.data.serviceConnect.id;
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {

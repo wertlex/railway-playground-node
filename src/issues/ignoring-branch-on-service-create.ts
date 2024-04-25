@@ -28,11 +28,11 @@ async function main() {
     endpoint: railwayEndpoint
   });
 
-  const projectId = existingProjectId ?? (await client.createProject({ name: `My-Project-${Date.now()}` }));
+  const projectId = existingProjectId ?? (await client.projectCreate({ name: `My-Project-${Date.now()}` }));
   console.log(`projectId: ${projectId}`);
 
   // works good! (deployment eventually will fail due to lack of env vars, but this is not relevant here)
-  const postgresServiceId = await client.createService({
+  const postgresServiceId = await client.serviceCreate({
     projectId,
     name: `PG-${Date.now()}`,
     source: {
@@ -42,7 +42,7 @@ async function main() {
   console.log(`postgresServiceId: ${postgresServiceId}`);
 
   // `branch` value is completely ignored (check UI)
-  const serviceId = await client.createService({
+  const serviceId = await client.serviceCreate({
     projectId,
     name: `S-${Date.now()}`,
     branch: 'main', // this parameter has no effect

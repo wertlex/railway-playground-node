@@ -28,11 +28,11 @@ async function main() {
     endpoint: railwayEndpoint
   });
 
-  const projectId = existingProjectId ?? (await client.createProject({ name: `My-Project-${Date.now()}` }));
+  const projectId = existingProjectId ?? (await client.projectCreate({ name: `My-Project-${Date.now()}` }));
   console.log(`projectId: ${projectId}`);
 
   // works good! (deployment eventually will fail due to lack of env vars, but this is not relevant here)
-  const postgresServiceId = await client.createService({
+  const postgresServiceId = await client.serviceCreate({
     projectId,
     name: `PG-${Date.now()}`,
     source: {
@@ -41,13 +41,13 @@ async function main() {
   });
   console.log(`postgresServiceId: ${postgresServiceId}`);
 
-  const serviceId = await client.createService({
+  const serviceId = await client.serviceCreate({
     projectId,
     name: `S-${Date.now()}`
   });
   console.log(`serviceId: ${serviceId}`);
 
-  const defaultProjectEnv = await client.getProjectDefaultEnvironmentId({ projectId });
+  const defaultProjectEnv = await client.projectGetDefaultEnvironmentId({ projectId });
   console.log(`defaultProjectEnv: ${defaultProjectEnv}`);
 }
 
