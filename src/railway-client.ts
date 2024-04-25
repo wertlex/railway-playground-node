@@ -114,6 +114,28 @@ export class RailwayClient {
     throw new Error(`Unexpected response from server`);
   }
 
+  async deleteProjects(projectIds: readonly string[]): Promise<void> {
+    const projectDeleteMutations = projectIds.map((id, idx) => `pj${idx}:projectDelete(id: "${id}")`).join('\n');
+    const query = `
+      mutation ProjectsDelete {
+        ${projectDeleteMutations}
+      }
+    `;
+
+    const requestBody = {
+      query
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+  }
+
   async createService(input: CreateServiceInput): Promise<string> {
     const query = `
       mutation ServiceCreate($serviceCreateInput: ServiceCreateInput!) {

@@ -17,6 +17,9 @@ async function main() {
 
   const projects = await client.listProjects();
   console.log(`Got projects: ${JSON.stringify(projects, null, 2)}`);
+
+  await client.deleteProjects(projects.map(p => p.id));
+  console.log(`All projects are deleted`);
 }
 
 main();
