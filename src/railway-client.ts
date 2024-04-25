@@ -28,6 +28,10 @@ type ConnectServiceInput = Readonly<{
   repo?: string;
 }>;
 
+type GetProjectDefaultEnvironmentInput = Readonly<{
+  projectId: string;
+}>;
+
 export class RailwayClient {
   private readonly config: RailwayClientConfig;
 
@@ -138,6 +142,56 @@ export class RailwayClient {
 
     if (typeof result.data?.data?.serviceConnect?.id === 'string') {
       return result.data.data.serviceConnect.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async getProjectDefaultEnvironmentId(input: GetProjectDefaultEnvironmentInput): Promise<string> {
+    const query = `
+      query GetProject($id: String!) {
+        project(id: $id) {
+          id
+          environments {
+              edges {
+                  node {
+                      createdAt
+                      id
+                      name
+                  }
+              }
+          }
+        }
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        id: input.projectId
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    const maybeEdges = result.data?.data?.project?.environments?.edges;
+    if (Array.isArray(maybeEdges) && maybeEdges.length > 0) {
+      const sortedEdges = [...maybeEdges].sort((a, b) => {
+        const aDate = new Date(a.node.createdAt);
+        const bDate = new Date(b.node.createdAt);
+        if (aDate < bDate) return -1;
+        if (aDate > bDate) return 1;
+        return 0;
+      });
+
+      return sortedEdges[0].node.id;
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
