@@ -8,6 +8,7 @@ type RailwayClientConfig = Readonly<{
 
 type CreateProjectInput = Readonly<{
   name: string;
+  teamId?: string;
 }>;
 
 type CreateServiceInput = Readonly<{
@@ -47,7 +48,8 @@ export class RailwayClient {
       query,
       variables: {
         projectCreateInput: {
-          name: input.name
+          name: input.name,
+          teamId: input.teamId
         }
       }
     };

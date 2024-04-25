@@ -15,6 +15,7 @@ import { RailwayClient } from '../railway-client';
 
 const railwayEndpoint = 'https://backboard.railway.app/graphql/v2';
 
+const teamId: string | undefined = undefined;
 // using existing project when need to simplify debugging
 const existingProjectId: string | undefined = undefined;
 
@@ -33,7 +34,7 @@ async function main() {
   });
 
   // creating new project if `existingProjectId` was not provided. Using `existingProjectId` helps to reduce amount of trash generated
-  const projectId = existingProjectId ?? (await client.createProject({ name: `My-Project-${Date.now()}` }));
+  const projectId = existingProjectId ?? (await client.createProject({ name: `My-Project-${Date.now()}`, teamId }));
   console.log(`projectId: ${projectId}`);
 
   // works good! (deployment eventually will fail due to lack of env vars, but this is not relevant here)
