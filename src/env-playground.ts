@@ -47,8 +47,17 @@ async function main() {
   });
   console.log(`serviceId: ${serviceId}`);
 
-  const defaultProjectEnv = await client.projectGetDefaultEnvironmentId({ projectId });
-  console.log(`defaultProjectEnv: ${defaultProjectEnv}`);
+  const defaultProjectEnvId = await client.projectGetDefaultEnvironmentId({ projectId });
+  console.log(`defaultProjectEnvId: ${defaultProjectEnvId}`);
+
+  await client.variableUpsert({
+    name: 'KEY-1',
+    value: 'VALUE-ONE',
+    environmentId: defaultProjectEnvId,
+    projectId,
+    serviceId
+  });
+  console.log(`Done inserting one env var`);
 }
 
 main();

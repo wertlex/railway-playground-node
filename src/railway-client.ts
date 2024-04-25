@@ -37,6 +37,14 @@ type ProjectData = {
   name: string;
 };
 
+type VariableUpsertInput = Readonly<{
+  name: string;
+  value: string;
+  environmentId: string;
+  projectId: string;
+  serviceId?: string;
+}>;
+
 export class RailwayClient {
   private readonly config: RailwayClientConfig;
 
@@ -255,6 +263,42 @@ export class RailwayClient {
 
     if (typeof result.data?.data?.serviceConnect?.id === 'string') {
       return result.data.data.serviceConnect.id;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async variableUpsert(input: VariableUpsertInput): Promise<void> {
+    const query = `
+      mutation VariableUpsert($variableUpsertInput: VariableUpsertInput!) {
+        variableUpsert(input: $variableUpsertInput)
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        variableUpsertInput: {
+          name: input.name,
+          value: input.value,
+          environmentId: input.environmentId,
+          projectId: input.projectId,
+          serviceId: input.serviceId
+        }
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (result.data?.data?.variableUpsert === true) {
+      return;
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
