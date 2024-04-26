@@ -53,11 +53,18 @@ async function main() {
   await client.variableUpsert({
     name: 'KEY-1',
     value: 'VALUE-ONE',
-    environmentId: defaultProjectEnvId,
     projectId,
+    environmentId: defaultProjectEnvId,
     serviceId
   });
   console.log(`Done inserting one env var`);
+
+  const variables = await client.variablesList({
+    projectId,
+    environmentId: defaultProjectEnvId,
+    serviceId
+  });
+  console.log(`Got variables: ${JSON.stringify(variables, null, 2)}`);
 }
 
 main();

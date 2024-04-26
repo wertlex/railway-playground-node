@@ -45,6 +45,13 @@ type VariableUpsertInput = Readonly<{
   serviceId?: string;
 }>;
 
+type VariableListInput = Readonly<{
+  environmentId: string;
+  projectId: string;
+  serviceId: string;
+  unrendered?: boolean;
+}>;
+
 export class RailwayClient {
   private readonly config: RailwayClientConfig;
 
@@ -299,6 +306,39 @@ export class RailwayClient {
 
     if (result.data?.data?.variableUpsert === true) {
       return;
+    }
+
+    if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
+      throw new Error(`Got an error: ${JSON.stringify(result.data.errors, null, 2)}`);
+    }
+
+    throw new Error(`Unexpected response from server`);
+  }
+
+  async variablesList(input: VariableListInput): Promise<Record<string, string>> {
+    const query = `
+      query VariableList($environmentId: String!, $projectId: String!, $serviceId: String, $unrendered: Boolean) {
+        variables(environmentId: $environmentId, projectId: $projectId, serviceId: $serviceId, unrendered: $unrendered)
+      }
+    `;
+
+    const requestBody = {
+      query,
+      variables: {
+        environmentId: input.environmentId,
+        projectId: input.projectId,
+        serviceId: input.serviceId,
+        unrendered: input.unrendered
+      }
+    };
+
+    const result = await axios.post(this.config.endpoint, requestBody, {
+      headers: this.getAuthorizationHeaders(this.config.token),
+      validateStatus: null
+    });
+
+    if (typeof result.data?.data?.variables !== 'undefined') {
+      return result.data.data.variables;
     }
 
     if (Array.isArray(result.data?.errors) && result.data.errors.length > 0) {
